@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 
 class AddTodo extends StatefulWidget {
   const AddTodo({super.key});
@@ -8,10 +12,35 @@ class AddTodo extends StatefulWidget {
 }
 
 class _AddTodoState extends State<AddTodo> {
-
   final title = TextEditingController();
   final desc = TextEditingController();
   bool loader = false;
+
+  Future<void> AddTodo() async {
+    try {
+      await http.post(
+        Uri.parse('https://todoappnweb.onrender.com/todo'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'title': title.text,
+          'description': desc.text,
+          'completed': false,
+        }),
+      );
+      setState(() {
+        Navigator.pop(context);
+      });
+      Fluttertoast.showToast(
+        msg: "Success: Data Inserted",
+        timeInSecForIosWeb: 3,
+      );
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error: Data not inerted",
+        timeInSecForIosWeb: 3,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +71,7 @@ class _AddTodoState extends State<AddTodo> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                
+                AddTodo();
               },
               child: Text("Add Todo"),
             ),
