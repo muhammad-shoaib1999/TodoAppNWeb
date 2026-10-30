@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:todo_app/Screens/add_todo.dart';
@@ -26,10 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final response = await http.get(
         Uri.parse('https://todoappnweb.onrender.com/todo'),
       );
-
-      // print(response.statusCode);
-      // print(response.body);
-
       if (response.statusCode == 200) {
         todos = jsonDecode(response.body);
       } else {
@@ -46,11 +41,69 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+
+   // update Status function
+  Future<void> updateStatus(bool isCompleted, String id) async {
+    try {
+      if(isCompleted){
+        await http.put(
+        Uri.parse('https://todoappnweb.onrender.com/todo/$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'completed': false,
+        }),
+      );
+      }else{
+        await http.put(
+        Uri.parse('https://todoappnweb.onrender.com/todo/$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'completed': true,
+        }),
+      );
+      }
+      Fluttertoast.showToast(
+        msg: "Success: Status Update Successfully...",
+        timeInSecForIosWeb: 3,
+      );
+      loadTodos();
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error: Status Update Failed...",
+        timeInSecForIosWeb: 3,
+      );
+    }
+  }
+
+ 
+ 
+   // Delete Data function
+  Future<void> deleteTodo(String id) async {
+    try {
+        await http.delete(
+        Uri.parse('https://todoappnweb.onrender.com/todo/$id'),
+      );
+      Fluttertoast.showToast(
+        msg: "Success: Todo Delete Successfully...",
+        timeInSecForIosWeb: 3,
+      );
+      loadTodos();
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error: Todo Delete Failed...",
+        timeInSecForIosWeb: 3,
+      );
+    }
+  }
+
+
   @override
   void initState() {
-    loadTodos();
     super.initState();
+    loadTodos();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,51 +128,43 @@ class _HomeScreenState extends State<HomeScreen> {
           : ListView.builder(
               itemCount: todos.length,
               itemBuilder: (context, index) {
-                final todo = todos[index];
-
                 return Card(
                   child: ListTile(
                     leading: CircleAvatar(child: Icon(Icons.task)),
-                    title: Text(todo['title'].toString()),
-                    subtitle: Text(todo['description'].toString()),
+                    title: Text(todos[index]['title'].toString()),
+                    subtitle: Text(todos[index]['description'].toString()),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        todo['completed']
+                        todos[index]['completed']
                             ? TextButton(
                                 style: TextButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(
-                                    99,
-                                    51,
-                                    255,
-                                    136,
-                                  ),
+                                  backgroundColor: const Color.fromARGB(99,51,255,136,),
                                   foregroundColor: Colors.black,
                                   textStyle: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  updateStatus(true ,todos[index]['_id']);
+                                },
                                 child: Text("Completed"),
                               )
                             : TextButton(
                                 style: TextButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(
-                                    100,
-                                    255,
-                                    64,
-                                    51,
-                                  ),
+                                  backgroundColor: const Color.fromARGB(100, 255, 64,51,),
                                   foregroundColor: Colors.black,
                                   textStyle: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                onPressed: () {},
+                                onPressed: () {
+                                  updateStatus(false ,todos[index]['_id']);
+                                },
                                 child: Text("Pending"),
                               ),
 
@@ -131,14 +176,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => UpdateTodo(),
+                                    builder: (context) => UpdateTodo(id: todos[index]['_id']),
                                   ),
                                 );
                               },
                               icon: Icon(Icons.edit),
                             ),
                             IconButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                deleteTodo(todos[index]['_id']);
+                              },
                               icon: Icon(Icons.delete),
                             ),
                           ],

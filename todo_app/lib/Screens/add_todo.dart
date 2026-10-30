@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:todo_app/Screens/home_screen.dart';
 
 class AddTodo extends StatefulWidget {
   const AddTodo({super.key});
@@ -16,7 +16,7 @@ class _AddTodoState extends State<AddTodo> {
   final desc = TextEditingController();
   bool loader = false;
 
-  Future<void> AddTodo() async {
+  Future<void> addTodo() async {
     try {
       await http.post(
         Uri.parse('https://todoappnweb.onrender.com/todo'),
@@ -28,7 +28,10 @@ class _AddTodoState extends State<AddTodo> {
         }),
       );
       setState(() {
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
       });
       Fluttertoast.showToast(
         msg: "Success: Data Inserted",
@@ -71,7 +74,7 @@ class _AddTodoState extends State<AddTodo> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                AddTodo();
+                addTodo();
               },
               child: Text("Add Todo"),
             ),
